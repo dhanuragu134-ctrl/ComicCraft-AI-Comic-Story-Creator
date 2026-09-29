@@ -1,106 +1,140 @@
+import json
 import os
-import time
 
 from dotenv import load_dotenv
 from google import genai
 
+
 load_dotenv()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL = os.getenv("GEMINI_FLASH_MODEL", "gemini-3.5-flash-lite")
+
+MODEL = os.getenv(
+    "GEMINI_FLASH_MODEL",
+    "gemini-3.5-flash-lite"
+)
+
 
 if not API_KEY:
     raise RuntimeError(
         "GEMINI_API_KEY is missing. Please add it to the .env file."
     )
 
-client = genai.Client(api_key=API_KEY)
+
+client = genai.Client(
+    api_key=API_KEY
+)
 
 
-def generate_story(
-    story_prompt: str,
-    character_name: str,
-    setting: str,
-    tone: str,
-) -> str:
+def generate_outline(user_prompt: str) -> list:
+    """
+    Generate a structured 5-panel comic outline.
+
+    Each panel contains:
+    - panel
+    - title
+    - scene_description
+    - image_prompt
+    """
 
     prompt = f"""
-Create a short five-panel comic story.
+Create a structured 5-panel comic outline from this story idea:
 
-Story idea: {story_prompt}
-Main character: {character_name}
-Setting: {setting}
-Tone: {tone}
+{user_prompt}
 
-Return exactly five panels.
+Return ONLY valid JSON.
 
-Panel 1
-Scene:
-Narration:
-Dialogue:
+The JSON must be a list containing exactly 5 objects.
 
-Panel 2
-Scene:
-Narration:
-Dialogue:
+Each object must contain exactly these fields:
 
-Panel 3
-Scene:
-Narration:
-Dialogue:
+panel
+title
+scene_description
+image_prompt
 
-Panel 4
-Scene:
-Narration:
-Dialogue:
+Example structure:
 
-Panel 5
-Scene:
-Narration:
-Dialogue:
+[
+  {{
+    "panel": 1,
+    "title": "The Beginning",
+    "scene_description": "A short description of the scene.",
+    "image_prompt": "A detailed visual prompt for the comic illustration."
+  }}
+]
 
 Make the five panels form one complete story.
-Keep the story suitable for a general audience.
-Keep narration and dialogue short and clear.
+Keep the character, setting, and visual style consistent.
+Make image_prompt detailed enough for an image-generation model.
+Do not include markdown or ```json code fences.
 """
 
-    delays = [5, 15, 30]
-    last_error = None
-
-    for attempt in range(3):
-        try:
-            print(
-                f"Trying Gemini model: {MODEL} "
-                f"(attempt {attempt + 1}/3)"
-            )
-
-            response = client.models.generate_content(
-                model=MODEL,
-                contents=prompt,
-            )
-
-            if response.text:
-                print("Gemini generation successful.")
-                return response.text
-
-            raise RuntimeError("Gemini returned an empty response.")
-
-        except Exception as e:
-            last_error = e
-            error_text = str(e)
-
-            print(f"Gemini error: {error_text}")
-
-            if "429" in error_text or "503" in error_text:
-                if attempt < 2:
-                    print(f"Retrying in {delays[attempt]} seconds...")
-                    time.sleep(delays[attempt])
-                    continue
-
-            raise RuntimeError(
-                f"Gemini generation failed: {error_text}"
-            )
-
-    raise RuntimeError(
-        f"Gemini generation failed after retries: {last_error}"
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=prompt,
     )
+
+    output_text = (response.text or "").strip()
+
+    if not output_text:
+        raise RuntimeError(
+            "Gemini Flash returned an empty outline."
+        )
+
+    # Remove markdown code fences if Gemini returns them.
+    if output_text.startswith("```json"):
+        output_text = (
+            output_text
+            .replace("```json", "", 1)
+            .replace("```", "")
+            .strip()
+        )
+
+    elif output_text.startswith("```"):
+        output_text = (
+            output_text
+            .replace("```", "", 2)
+            .strip()
+        )
+
+    try:
+        outline = json.loads(output_text)
+    except json.JSONDecodeError as error:
+        raise RuntimeError(
+            f"Gemini Flash returned invalid JSON: {error}"
+        )
+
+    if not isinstance(outline, list):
+        raise RuntimeError(
+            "Gemini Flash outline must be a list."
+        )
+
+    if len(outline) != 5:
+        raise RuntimeError(
+            f"Expected 5 panels, but received {len(outline)}."
+        )
+
+    required_fields = {
+        "panel",
+        "title",
+        "scene_description",
+        "image_prompt",
+    }
+
+    for index, panel in enumerate(outline, start=1):
+
+        if not isinstance(panel, dict):
+            raise RuntimeError(
+                f"Panel {index} is not a valid object."
+            )
+
+        missing_fields = required_fields - set(panel.keys())
+
+        if missing_fields:
+            raise RuntimeError(
+                f"Panel {index} is missing: "
+                f"{', '.join(sorted(missing_fields))}"
+            )
+
+    return outline
