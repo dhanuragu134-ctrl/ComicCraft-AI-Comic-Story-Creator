@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ComicCraft - Result</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f7;
+            margin: 0;
+            padding: 40px 20px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .result {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 13px 20px;
+            background: #7c3aed;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>ComicCraft</h1>
+
+        <h2>Generated AI Result</h2>
+
+        <div class="result">
+            {{ result }}
+        </div>
+
+        <a href="/" class="button">
+            ← Create Another Comic
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
