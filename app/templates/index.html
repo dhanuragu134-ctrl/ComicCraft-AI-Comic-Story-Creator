@@ -1,0 +1,209 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ComicCraft - AI Comic Story Creator</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f7;
+            color: #222;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 20px;
+        }
+
+        header h1 {
+            font-size: 40px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #666;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .eyebrow {
+            color: #7c3aed;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .hero h2 {
+            font-size: 38px;
+        }
+
+        .hero-text {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+
+        .comic-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        textarea,
+        input,
+        select {
+            padding: 13px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        textarea {
+            min-height: 130px;
+        }
+
+        .primary-button {
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: #7c3aed;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🎨 ComicCraft</h1>
+        <p>AI Comic Story Creator</p>
+    </header>
+
+    <section class="hero">
+
+        <p class="eyebrow">
+            GENERATIVE AI PROJECT
+        </p>
+
+        <h2>
+            Create your own AI comic.
+        </h2>
+
+        <p class="hero-text">
+            Enter a story idea and let ComicCraft
+            generate a five-panel story,
+            illustrations, narration and
+            a downloadable PDF.
+        </p>
+
+    </section>
+
+    <section class="card">
+
+        <h2>Comic Details</h2>
+
+        <form action="/generate" method="post" class="comic-form">
+
+            <label>
+                Story Prompt
+
+                <textarea
+                    name="story_prompt"
+                    required
+                    placeholder="A brave fox exploring an enchanted forest..."
+                ></textarea>
+            </label>
+
+            <label>
+                Main Character Name
+
+                <input
+                    type="text"
+                    name="character_name"
+                    required
+                    placeholder="Luna"
+                >
+            </label>
+
+            <label>
+                Setting
+
+                <select name="setting" required>
+                    <option>Enchanted forest</option>
+                    <option>School</option>
+                    <option>Future city</option>
+                    <option>Space station</option>
+                    <option>Magical kingdom</option>
+                </select>
+            </label>
+
+            <label>
+                Story Tone
+
+                <select name="tone" required>
+                    <option>Adventurous</option>
+                    <option>Funny</option>
+                    <option>Dramatic</option>
+                    <option>Poetic</option>
+                    <option>Light-hearted</option>
+                </select>
+            </label>
+
+            <label>
+                Art Style
+
+                <select name="art_style" required>
+                    <option>Comic book</option>
+                    <option>Anime</option>
+                    <option>Pixel art</option>
+                    <option>Watercolor illustration</option>
+                    <option>Cinematic digital art</option>
+                </select>
+            </label>
+
+            <button type="submit" class="primary-button">
+                Generate My Comic
+            </button>
+
+        </form>
+
+    </section>
+
+</div>
+
+</body>
+</html>

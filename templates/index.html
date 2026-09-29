@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="hero">
+
+    <p class="eyebrow">
+        GENERATIVE AI PROJECT
+    </p>
+
+    <h2>
+        Create your own AI comic.
+    </h2>
+
+    <p class="hero-text">
+        Enter a story idea and let ComicCraft
+        generate a five-panel story,
+        illustrations, narration and
+        a downloadable PDF.
+    </p>
+
+</section>
+
+<section class="card">
+
+    <h2>Comic Details</h2>
+
+    <form action="/generate" method="post" class="comic-form">
+
+        <label>
+            Story Prompt
+
+            <textarea
+                name="story_prompt"
+                required
+                placeholder="A brave fox exploring an enchanted forest..."
+            ></textarea>
+        </label>
+
+        <label>
+            Main Character Name
+
+            <input
+                type="text"
+                name="character_name"
+                required
+                placeholder="Luna"
+            >
+        </label>
+
+        <label>
+            Setting
+
+            <select name="setting" required>
+                <option value="Enchanted forest">
+                    Enchanted forest
+                </option>
+
+                <option value="School">
+                    School
+                </option>
+
+                <option value="Future city">
+                    Future city
+                </option>
+
+                <option value="Space station">
+                    Space station
+                </option>
+
+                <option value="Magical kingdom">
+                    Magical kingdom
+                </option>
+            </select>
+        </label>
+
+        <label>
+            Story Tone
+
+            <select name="tone" required>
+                <option value="Adventurous">
+                    Adventurous
+                </option>
+
+                <option value="Funny">
+                    Funny
+                </option>
+
+                <option value="Dramatic">
+                    Dramatic
+                </option>
+
+                <option value="Poetic">
+                    Poetic
+                </option>
+
+                <option value="Light-hearted">
+                    Light-hearted
+                </option>
+            </select>
+        </label>
+
+        <label>
+            Art Style
+
+            <select name="art_style" required>
+                <option value="Comic book">
+                    Comic book
+                </option>
+
+                <option value="Anime">
+                    Anime
+                </option>
+
+                <option value="Pixel art">
+                    Pixel art
+                </option>
+
+                <option value="Watercolor illustration">
+                    Watercolor illustration
+                </option>
+
+                <option value="Cinematic digital art">
+                    Cinematic digital art
+                </option>
+            </select>
+        </label>
+
+        <button type="submit" class="primary-button">
+            Generate My Comic
+        </button>
+
+    </form>
+
+</section>
+
+{% endblock %}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        ComicCraft - Generated Comic
+    </title>
+
+    <style>
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f7;
+            color: #222;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 40px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            box-shadow:
+                0 5px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .details p {
+            line-height: 1.6;
+        }
+
+        .story {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            background: #f3f4f6;
+            padding: 22px;
+            border-radius: 12px;
+        }
+
+        .buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 14px 22px;
+            margin: 6px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .download {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .back {
+            background: #e5e7eb;
+            color: #222;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>
+            ComicCraft
+        </h1>
+
+        <p>
+            AI Generated Comic Story
+        </p>
+
+    </div>
+
+
+    <div class="card details">
+
+        <h2>
+            Comic Details
+        </h2>
+
+        <p>
+            <strong>Character:</strong>
+            {{ character_name }}
+        </p>
+
+        <p>
+            <strong>Setting:</strong>
+            {{ setting }}
+        </p>
+
+        <p>
+            <strong>Tone:</strong>
+            {{ tone }}
+        </p>
+
+        <p>
+            <strong>Art Style:</strong>
+            {{ art_style }}
+        </p>
+
+        <p>
+            <strong>Story Prompt:</strong>
+            {{ story_prompt }}
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>
+            AI Generated Comic Story
+        </h2>
+
+        <div class="story">
+            {{ story }}
+        </div>
+
+    </div>
+
+
+    <div class="buttons">
+
+        {% if pdf_url %}
+
+        <a
+            href="{{ pdf_url }}"
+            class="button download"
+            target="_blank"
+        >
+            Download PDF
+        </a>
+
+        {% endif %}
+
+
+        <a
+            href="/"
+            class="button back"
+        >
+            <- Create Another Comic
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
