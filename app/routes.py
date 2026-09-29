@@ -21,13 +21,8 @@ templates = Jinja2Templates(
 
 
 def split_story_by_panel(story: str) -> dict[int, str]:
-    """
-    Split Gemini's story into Panel 1 ... Panel 5 sections.
-    """
-
-    pattern = r"(?=Panel\s+\d+\b)"
     parts = re.split(
-        pattern,
+        r"(?=Panel\s+\d+\b)",
         story,
         flags=re.IGNORECASE
     )
@@ -35,7 +30,6 @@ def split_story_by_panel(story: str) -> dict[int, str]:
     result = {}
 
     for part in parts:
-
         part = part.strip()
 
         match = re.match(
@@ -45,8 +39,7 @@ def split_story_by_panel(story: str) -> dict[int, str]:
         )
 
         if match:
-            number = int(match.group(1))
-            result[number] = part
+            result[int(match.group(1))] = part
 
     return result
 
@@ -60,30 +53,24 @@ def build_panel_records(
 
     panels = []
 
-    for index, outline_panel in enumerate(
-        outline,
-        start=1
-    ):
+    for index, item in enumerate(outline, start=1):
 
         panel_number = int(
-            outline_panel.get(
-                "panel",
-                index
-            )
+            item.get("panel", index)
         )
 
         panels.append(
             {
                 "panel": panel_number,
-                "title": outline_panel.get(
+                "title": item.get(
                     "title",
                     f"Panel {panel_number}"
                 ),
-                "scene_description": outline_panel.get(
+                "scene_description": item.get(
                     "scene_description",
                     ""
                 ),
-                "image_prompt": outline_panel.get(
+                "image_prompt": item.get(
                     "image_prompt",
                     ""
                 ),
@@ -98,21 +85,19 @@ def build_panel_records(
     return panels
 
 
-def generate_panel_images(
+def generate_images(
     panels: list[dict[str, Any]],
     character_name: str,
     setting: str,
     art_style: str,
 ) -> tuple[list[dict[str, Any]], list[str]]:
 
-    updated_panels = []
-    image_errors = []
+    errors = []
 
     for panel in panels:
 
         try:
-
-            image_path = generate_panel_image(
+            panel["image_path"] = generate_panel_image(
                 scene_description=panel["image_prompt"],
                 character_name=character_name,
                 setting=setting,
@@ -120,23 +105,15 @@ def generate_panel_images(
                 panel_number=panel["panel"],
             )
 
-            panel["image_path"] = image_path
-
         except Exception as error:
-
-            image_errors.append(
+            errors.append(
                 f"Panel {panel['panel']}: {error}"
             )
 
-        updated_panels.append(panel)
-
-    return updated_panels, image_errors
+    return panels, errors
 
 
-@router.get(
-    "/",
-    response_class=HTMLResponse
-)
+@router.get("/", response_class=HTMLResponse)
 async def home(request: Request):
 
     return templates.TemplateResponse(
@@ -146,13 +123,9 @@ async def home(request: Request):
     )
 
 
-@router.post(
-    "/generate",
-    response_class=HTMLResponse
-)
+@router.post("/generate", response_class=HTMLResponse)
 async def generate_comic(
     request: Request,
-
     story_prompt: str = Form(...),
     character_name: str = Form(...),
     setting: str = Form(...),
@@ -162,55 +135,37 @@ async def generate_comic(
 
     try:
 
-        # ----------------------------------
-        # 1. Gemini Flash - comic outline
-        # ----------------------------------
-
+        # 1. Generate structured outline
         outline = generate_outline(
             story_prompt
         )
 
-        # ----------------------------------
-        # 2. Gemini Pro - story
-        # ----------------------------------
-
+        # 2. Generate narration and dialogue
         story = generate_story(
             outline
         )
 
-        # ----------------------------------
         # 3. Build panel records
-        # ----------------------------------
-
         panels = build_panel_records(
-            outline=outline,
-            story=story
+            outline,
+            story
         )
 
-        # ----------------------------------
-        # 4. Try image generation
-        # ----------------------------------
-
-        panels, image_errors = generate_panel_images(
-            panels=panels,
-            character_name=character_name,
-            setting=setting,
-            art_style=art_style,
+        # 4. Generate panel images
+        panels, image_errors = generate_images(
+            panels,
+            character_name,
+            setting,
+            art_style,
         )
 
-        # ----------------------------------
         # 5. Build comic layout
-        # ----------------------------------
-
         layout = build_comic_layout(
             panels=panels,
             story=story
         )
 
-        # ----------------------------------
-        # 6. Create PDF
-        # ----------------------------------
-
+        # 6. Export PDF
         pdf_path = create_comic_pdf(
             story_prompt=story_prompt,
             character_name=character_name,
@@ -218,6 +173,7 @@ async def generate_comic(
             tone=tone,
             art_style=art_style,
             story=story,
+            layout=layout,
         )
 
         pdf_filename = pdf_path.replace(
@@ -252,29 +208,18 @@ async def generate_comic(
         return HTMLResponse(
             content=f"""
             <html>
-            <body style="
-                font-family: Arial;
-                padding: 40px;
-            ">
-
+            <body style="font-family:Arial;padding:40px;">
                 <h2>Comic generation error</h2>
-
                 <pre>{error}</pre>
-
-                <a href="/">
-                    &lt;- Go Back
-                </a>
-
+                <a href="/">Back</a>
             </body>
             </html>
             """,
-            status_code=500
+            status_code=500,
         )
 
 
-@router.post(
-    "/generate-comic/json"
-)
+@router.post("/generate-comic/json")
 async def generate_comic_json(
     data: PromptRequest
 ):
@@ -290,8 +235,8 @@ async def generate_comic_json(
         )
 
         panels = build_panel_records(
-            outline=outline,
-            story=story
+            outline,
+            story
         )
 
         layout = build_comic_layout(
@@ -306,6 +251,7 @@ async def generate_comic_json(
             tone=data.tone,
             art_style=data.art_style,
             story=story,
+            layout=layout,
         )
 
         return {
@@ -327,9 +273,7 @@ async def generate_comic_json(
         )
 
 
-@router.post(
-    "/test-image"
-)
+@router.post("/test-image")
 async def test_image(
     prompt: str = Form(...)
 ):

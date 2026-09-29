@@ -27,7 +27,7 @@ def clean_text(text: str) -> str:
         text = text.replace(old, new)
 
     return (
-        text
+        str(text)
         .encode("latin-1", "replace")
         .decode("latin-1")
     )
@@ -37,31 +37,10 @@ def safe_filename(text: str) -> str:
     text = re.sub(
         r"[^a-zA-Z0-9_-]+",
         "_",
-        text
+        str(text)
     )
 
     return text.strip("_") or "comic"
-
-
-def add_wrapped_text(
-    pdf: FPDF,
-    text: str,
-    font_size: int = 11,
-    line_height: float = 7,
-):
-    text = clean_text(str(text))
-
-    pdf.set_x(15)
-
-    pdf.multi_cell(
-        w=180,
-        h=line_height,
-        text=text,
-        border=0,
-        align="L",
-    )
-
-    pdf.set_x(15)
 
 
 def create_comic_pdf(
@@ -71,6 +50,7 @@ def create_comic_pdf(
     tone: str,
     art_style: str,
     story: str,
+    layout=None,
 ) -> str:
 
     os.makedirs(
@@ -99,9 +79,9 @@ def create_comic_pdf(
     )
 
     pdf.set_margins(
-        left=15,
-        top=15,
-        right=15
+        15,
+        15,
+        15
     )
 
     pdf.set_auto_page_break(
@@ -109,62 +89,56 @@ def create_comic_pdf(
         margin=15
     )
 
+    # --------------------------------
+    # COVER PAGE
+    # --------------------------------
+
     pdf.add_page()
 
-    # TITLE
     pdf.set_font(
         "Helvetica",
         "B",
-        24
+        26
     )
 
-    pdf.set_x(15)
-
     pdf.cell(
-        w=180,
-        h=15,
-        text="ComicCraft",
-        border=0,
+        180,
+        15,
+        "ComicCraft",
         align="C",
         new_x="LMARGIN",
-        new_y="NEXT",
+        new_y="NEXT"
     )
 
     pdf.set_font(
         "Helvetica",
         "",
-        12
+        13
     )
-
-    pdf.set_x(15)
 
     pdf.cell(
-        w=180,
-        h=8,
-        text="AI Comic Story Creator",
-        border=0,
+        180,
+        8,
+        "AI Comic Story Creator",
         align="C",
         new_x="LMARGIN",
-        new_y="NEXT",
+        new_y="NEXT"
     )
 
-    pdf.ln(8)
+    pdf.ln(12)
 
-    # COMIC DETAILS
     pdf.set_font(
         "Helvetica",
         "B",
-        16
+        15
     )
 
-    pdf.set_x(15)
-
     pdf.cell(
-        w=180,
-        h=10,
-        text="Comic Details",
+        180,
+        10,
+        "Comic Details",
         new_x="LMARGIN",
-        new_y="NEXT",
+        new_y="NEXT"
     )
 
     pdf.set_font(
@@ -183,72 +157,196 @@ def create_comic_pdf(
 
     for label, value in details:
 
-        add_wrapped_text(
-            pdf,
-            f"{label}: {clean_text(str(value))}",
-            font_size=11,
-            line_height=7,
+        pdf.set_x(15)
+
+        pdf.multi_cell(
+            180,
+            7,
+            f"{label}: {clean_text(value)}"
         )
 
-    pdf.ln(6)
+    # --------------------------------
+    # PANEL PAGES
+    # --------------------------------
 
-    # AI STORY
-    pdf.set_font(
-        "Helvetica",
-        "B",
-        16
-    )
+    if layout:
 
-    pdf.set_x(15)
+        for panel in layout:
 
-    pdf.cell(
-        w=180,
-        h=10,
-        text="AI Generated Comic Story",
-        new_x="LMARGIN",
-        new_y="NEXT",
-    )
+            pdf.add_page()
 
-    pdf.set_font(
-        "Helvetica",
-        "",
-        11
-    )
+            panel_number = panel.get(
+                "panel",
+                ""
+            )
 
-    story_text = clean_text(str(story))
+            title = panel.get(
+                "title",
+                f"Panel {panel_number}"
+            )
 
-    for line in story_text.splitlines():
+            image_path = panel.get(
+                "image_path",
+                ""
+            )
 
-        line = line.strip()
+            scene_description = panel.get(
+                "scene_description",
+                ""
+            )
 
-        if not line:
-            pdf.ln(3)
-            continue
+            panel_text = panel.get(
+                "text",
+                ""
+            )
 
-        add_wrapped_text(
-            pdf,
-            line,
-            font_size=11,
-            line_height=7,
+            # Panel heading
+            pdf.set_font(
+                "Helvetica",
+                "B",
+                17
+            )
+
+            pdf.cell(
+                180,
+                10,
+                f"Panel {panel_number}: "
+                f"{clean_text(title)}",
+                align="C",
+                new_x="LMARGIN",
+                new_y="NEXT"
+            )
+
+            pdf.ln(4)
+
+            # Panel image
+            if (
+                image_path
+                and os.path.exists(image_path)
+            ):
+
+                try:
+
+                    pdf.image(
+                        image_path,
+                        x=20,
+                        y=35,
+                        w=170
+                    )
+
+                    pdf.set_y(145)
+
+                except Exception:
+                    pdf.set_y(40)
+
+            else:
+
+                pdf.set_y(40)
+
+                pdf.set_font(
+                    "Helvetica",
+                    "I",
+                    11
+                )
+
+                pdf.multi_cell(
+                    180,
+                    7,
+                    "[Comic panel image unavailable]"
+                )
+
+                pdf.ln(5)
+
+            # Scene description
+            if scene_description:
+
+                pdf.set_font(
+                    "Helvetica",
+                    "I",
+                    10
+                )
+
+                pdf.multi_cell(
+                    180,
+                    6,
+                    f"Scene: {clean_text(scene_description)}"
+                )
+
+                pdf.ln(3)
+
+            # Narration/dialogue
+            if panel_text:
+
+                pdf.set_font(
+                    "Helvetica",
+                    "",
+                    11
+                )
+
+                pdf.multi_cell(
+                    180,
+                    7,
+                    clean_text(panel_text)
+                )
+
+    else:
+
+        # Fallback when no layout is supplied.
+        pdf.add_page()
+
+        pdf.set_font(
+            "Helvetica",
+            "B",
+            16
         )
+
+        pdf.cell(
+            180,
+            10,
+            "AI Generated Comic Story",
+            new_x="LMARGIN",
+            new_y="NEXT"
+        )
+
+        pdf.set_font(
+            "Helvetica",
+            "",
+            11
+        )
+
+        for line in clean_text(story).splitlines():
+
+            line = line.strip()
+
+            if not line:
+                pdf.ln(3)
+                continue
+
+            pdf.set_x(15)
+
+            pdf.multi_cell(
+                180,
+                7,
+                line
+            )
+
+    # --------------------------------
+    # FOOTER
+    # --------------------------------
 
     pdf.ln(8)
 
-    # FOOTER
     pdf.set_font(
         "Helvetica",
         "I",
         9
     )
 
-    pdf.set_x(15)
-
     pdf.cell(
-        w=180,
-        h=6,
-        text="Created with ComicCraft",
-        new_x="LMARGIN",
-        new_y="NEXT",
+        180,
+        6,
+        "Created with ComicCraft",
+        align="C"
     )
 
     pdf.output(output_path)
